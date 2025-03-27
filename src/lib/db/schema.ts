@@ -19,6 +19,8 @@ export const orders = sqliteTable('orders', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   totalPrice: real('total_price').notNull(),
+  amountPaid: real('amount_paid').notNull(),
+  change: real('change').notNull()
 });
 
 export const orderLines = sqliteTable('order_lines', {

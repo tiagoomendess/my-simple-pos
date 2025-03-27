@@ -106,7 +106,8 @@
     }
 
     .item-quantity {
-        margin: 0 5px;
+        margin: 0 10px 0 0;
+        font-weight: bold;
     }
 
     .item-price {
@@ -138,12 +139,10 @@
 
 <div class="receipt">
     <div class="header">
-        <div class="business-name">My Simple POS</div>
+        <div class="business-name">Bar da Comissão de Festas</div>
         <div class="business-info">
-            123 Business Street<br>
-            City, Country<br>
-            Phone: (123) 456-7890<br>
-            Email: info@mysimplepos.com
+            Largo da Igreja<br>
+            Tamel Santa Leocádia<br>
         </div>
     </div>
 
@@ -155,8 +154,8 @@
     <div class="items">
         {#each order.items as item}
             <div class="item">
-                <span class="item-name">{item.name}</span>
                 <span class="item-quantity">{item.quantity}x</span>
+                <span class="item-name">{item.name}</span>
                 <span class="item-price">{formatPrice(item.priceAtTime * item.quantity)}</span>
             </div>
         {/each}
@@ -173,8 +172,8 @@
     </div>
 
     <div class="footer">
-        Thank you for your business!<br>
-        Please come again
+        Obrigado pela sua compra!<br>
+        Volte sempre!
     </div>
 </div>
 

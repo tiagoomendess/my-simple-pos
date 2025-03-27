@@ -33,7 +33,9 @@ export async function initializeDatabase() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            total_price REAL NOT NULL
+            total_price REAL NOT NULL,
+            amount_paid REAL NOT NULL,
+            change REAL NOT NULL
         );
     `)
 

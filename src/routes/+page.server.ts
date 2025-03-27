@@ -1,7 +1,7 @@
 import { db } from '$lib/db';
 import { categories, products, orders, orderLines } from '$lib/db/schema';
 import type { PageServerLoad, Actions } from './$types';
-import { json } from '@sveltejs/kit';
+import { json, fail } from '@sveltejs/kit';
 import { eq, sql, desc, isNull } from 'drizzle-orm';
 
 const ITEMS_PER_PAGE = 20;
@@ -79,43 +79,40 @@ export const actions = {
     createOrder: async ({ request }) => {
         try {
             const formData = await request.formData();
-            
-            // Parse the form data
             const items = JSON.parse(formData.get('items') as string);
             const total = parseFloat(formData.get('total') as string);
             const amountPaid = parseFloat(formData.get('amountPaid') as string);
             const change = parseFloat(formData.get('change') as string);
 
-            // Start a transaction
-            const [order] = await db.insert(orders)
-                .values({
-                    totalPrice: total,
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                })
-                .returning();
+            // Create the order
+            const [order] = await db.insert(orders).values({
+                totalPrice: total,
+                amountPaid,
+                change,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            }).returning();
 
-            // Insert all order items
-            await db.insert(orderLines)
-                .values(
-                    items.map((item: OrderItem) => ({
-                        orderId: order.id,
-                        productId: item.id,
-                        quantity: item.quantity,
-                        priceAtTime: item.price
-                    }))
-                );
+            // Create order items
+            await db.insert(orderLines).values(
+                items.map((item: any) => ({
+                    orderId: order.id,
+                    productId: item.id,
+                    quantity: item.quantity,
+                    priceAtTime: item.price
+                }))
+            );
 
             return {
                 type: 'success',
-                data: { order }
+                data: order
             };
         } catch (error) {
             console.error('Error creating order:', error);
-            return {
+            return fail(500, {
                 type: 'error',
                 error: 'Failed to create order'
-            };
+            });
         }
     }
 } satisfies Actions; 

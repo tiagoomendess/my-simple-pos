@@ -7,6 +7,8 @@
 	import { writable } from 'svelte/store';
 	import { setContext } from 'svelte';
 	import Receipt, { type ReceiptData } from '$lib/components/Receipt.svelte';
+	import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
+	import { enhance } from '$app/forms';
 
 	// Order store
 	interface OrderItem {
@@ -23,6 +25,33 @@
 	let showReceipt = false;
 	let currentReceipt: ReceiptData | null = null;
 	let isProcessingPayment = false;
+
+	// Handle form submission result
+	export function handleSubmitResult({ formData, action, cancel }: Parameters<SubmitFunction>[0]) {
+		isProcessingPayment = true;
+		formData.append('items', JSON.stringify($orderItems));
+		formData.append('total', total.toString());
+		formData.append('amountPaid', amountPaid);
+		formData.append('change', change.toString());
+	}
+
+	// Handle form submission success
+	export function handleSubmitSuccess({ result }: { result: ActionResult }) {
+		if (result.type === 'success' && result.data) {
+			// Update receipt with the order ID
+			if (currentReceipt) {
+				currentReceipt.id = (result.data as { id: number }).id;
+			}
+			// Clear the order and close the modal
+			clearOrder();
+			showPaymentModal = false;
+			amountPaid = '';
+		} else if (result.type === 'error') {
+			console.error('Failed to save order:', result.error);
+			// TODO: Show error message to user
+		}
+		isProcessingPayment = false;
+	}
 
 	// Calculate total
 	$: total = $orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -96,53 +125,21 @@
 		}
 	}
 
-	// Handle finish payment
-	async function handleFinishPayment() {
-		try {
-			isProcessingPayment = true;
-			const formData = new FormData();
-			formData.append('items', JSON.stringify($orderItems));
-			formData.append('total', total.toString());
-			formData.append('amountPaid', amountPaid);
-			formData.append('change', change.toString());
-
-			const response = await fetch('?/createOrder', {
-				method: 'POST',
-				body: formData
-			});
-
-			const result = await response.json();
-			
-			if (result.type === 'success') {
-				// Show receipt
-				currentReceipt = {
-					id: Date.now(), // Temporary ID until we get the real one from the server
-					createdAt: new Date(),
-					items: $orderItems.map(item => ({
-						name: item.name,
-						quantity: item.quantity,
-						priceAtTime: item.price
-					})),
-					totalPrice: total,
-					amountPaid: parseFloat(amountPaid),
-					change
-				};
-				showReceipt = true;
-
-				// Clear the order and close the modal
-				clearOrder();
-				showPaymentModal = false;
-				amountPaid = '';
-			} else {
-				console.error('Failed to save order:', result.error);
-				// TODO: Show error message to user
-			}
-		} catch (error) {
-			console.error('Error saving order:', error);
-			// TODO: Show error message to user
-		} finally {
-			isProcessingPayment = false;
-		}
+	// Handle form submission
+	function handleSubmit() {
+		showReceipt = true;
+		currentReceipt = {
+			id: 0, // Will be updated after form submission
+			createdAt: new Date(),
+			items: $orderItems.map(item => ({
+				name: item.name,
+				quantity: item.quantity,
+				priceAtTime: item.price
+			})),
+			totalPrice: total,
+			amountPaid: parseFloat(amountPaid),
+			change
+		};
 	}
 
 	// Focus input when modal opens
@@ -240,7 +237,13 @@
 
 {#if showPaymentModal}
 	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-		<div class="bg-white p-6 rounded-lg shadow-xl w-[500px]">
+		<form
+			method="POST"
+			action="?/createOrder"
+			use:enhance={handleSubmitResult}
+			on:submit={handleSubmit}
+			class="bg-white p-6 rounded-lg shadow-xl w-[500px]"
+		>
 			<!-- Section 1: Total -->
 			<div class="text-center mb-6">
 				<h3 class="text-lg font-bold mb-2">{$_('order.proceedToPayment')}</h3>
@@ -265,6 +268,7 @@
 				<div class="grid grid-cols-4 gap-2 mb-4">
 					{#each [5, 10, 20, 50] as amount}
 						<button
+							type="button"
 							on:click={() => amountPaid = amount.toString()}
 							class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors cursor-pointer"
 						>
@@ -277,6 +281,7 @@
 				<div class="grid grid-cols-3 gap-2">
 					{#each [7, 8, 9, 4, 5, 6, 1, 2, 3, '.', 0, '←'] as key}
 						<button
+							type="button"
 							on:click={() => handleNumpadInput(key.toString())}
 							class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors cursor-pointer"
 						>
@@ -297,6 +302,7 @@
 			<!-- Action Buttons -->
 			<div class="flex gap-3">
 				<button
+					type="button"
 					on:click={closePaymentModal}
 					disabled={isProcessingPayment}
 					class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -304,7 +310,7 @@
 					{$_('common.cancel')}
 				</button>
 				<button
-					on:click={handleFinishPayment}
+					type="submit"
 					disabled={Number(amountPaid) < total || isProcessingPayment}
 					class="flex-1 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
 				>
@@ -319,7 +325,7 @@
 					{/if}
 				</button>
 			</div>
-		</div>
+		</form>
 	</div>
 {/if}
 
