@@ -33,24 +33,34 @@
 		formData.append('total', total.toString());
 		formData.append('amountPaid', amountPaid);
 		formData.append('change', change.toString());
-	}
 
-	// Handle form submission success
-	export function handleSubmitSuccess({ result }: { result: ActionResult }) {
-		if (result.type === 'success' && result.data) {
-			// Update receipt with the order ID
-			if (currentReceipt) {
-				currentReceipt.id = (result.data as { id: number }).id;
+		return async ({ result }) => {
+			if (result.type === 'success' && result.data) {
+				// Create receipt with the order data
+				currentReceipt = {
+					id: (result.data as { id: number }).id,
+					createdAt: new Date(),
+					items: $orderItems.map(item => ({
+						name: item.name,
+						quantity: item.quantity,
+						priceAtTime: item.price
+					})),
+					totalPrice: total,
+					amountPaid: parseFloat(amountPaid),
+					change
+				};
+				
+				// Show receipt and clear order
+				showReceipt = true;
+				clearOrder();
+				showPaymentModal = false;
+				amountPaid = '';
+			} else if (result.type === 'error') {
+				console.error('Failed to save order:', result.error);
+				// TODO: Show error message to user
 			}
-			// Clear the order and close the modal
-			clearOrder();
-			showPaymentModal = false;
-			amountPaid = '';
-		} else if (result.type === 'error') {
-			console.error('Failed to save order:', result.error);
-			// TODO: Show error message to user
-		}
-		isProcessingPayment = false;
+			isProcessingPayment = false;
+		};
 	}
 
 	// Calculate total
@@ -127,19 +137,7 @@
 
 	// Handle form submission
 	function handleSubmit() {
-		showReceipt = true;
-		currentReceipt = {
-			id: 0, // Will be updated after form submission
-			createdAt: new Date(),
-			items: $orderItems.map(item => ({
-				name: item.name,
-				quantity: item.quantity,
-				priceAtTime: item.price
-			})),
-			totalPrice: total,
-			amountPaid: parseFloat(amountPaid),
-			change
-		};
+		// We don't need to do anything here as we'll handle everything in handleSubmitSuccess
 	}
 
 	// Focus input when modal opens
@@ -241,7 +239,6 @@
 			method="POST"
 			action="?/createOrder"
 			use:enhance={handleSubmitResult}
-			on:submit={handleSubmit}
 			class="bg-white p-6 rounded-lg shadow-xl w-[500px]"
 		>
 			<!-- Section 1: Total -->
