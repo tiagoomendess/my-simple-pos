@@ -23,4 +23,16 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 pos.db
-static/product-images/*
+
+# ignore all images in /static/product-images
+static/product-images/*.png
+static/product-images/*.jpg
+static/product-images/*.jpeg
+static/product-images/*.webp
+static/product-images/*.gif 
+static/product-images/*.svg
+static/product-images/*.ico
+static/product-images/*.bmp
+static/product-images/*.tiff
+static/product-images/*.heic
+static/product-images/*.heif
