@@ -262,7 +262,7 @@
 				/>
 				
 				<!-- Quick Select Buttons -->
-				<div class="grid grid-cols-4 gap-2 mb-4">
+				<div class="grid grid-cols-5 gap-2 mb-4">
 					{#each [5, 10, 20, 50] as amount}
 						<button
 							type="button"
@@ -272,6 +272,13 @@
 							{formatPrice(amount)}
 						</button>
 					{/each}
+					<button
+						type="button"
+						on:click={() => amountPaid = total.toString()}
+						class="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors cursor-pointer"
+					>
+						{formatPrice(total)}
+					</button>
 				</div>
 
 				<!-- Numpad -->
