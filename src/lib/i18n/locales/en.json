@@ -26,7 +26,8 @@
         "page": "Page {current} of {total}",
         "close": "Close",
         "print": "Print Receipt",
-        "processing": "Processing..."
+        "processing": "Processing...",
+        "clear": "Clear"
     },
     "settings": {
         "title": "Settings",

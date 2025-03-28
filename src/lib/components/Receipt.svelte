@@ -22,7 +22,7 @@
     function formatDate(date: Date) {
         return new Date(date).toLocaleString('pt-PT', {
             dateStyle: 'short',
-            timeStyle: 'short'
+            timeStyle: 'medium'
         });
     }
 
@@ -41,24 +41,23 @@
 <style>
     @media print {
         @page {
-            size: 80mm auto;
+            size: 72mm auto;
             margin: 0;
-        }
-        body {
-            width: 80mm;
-            margin: 0;
-            padding: 0;
-            font-family: monospace;
-            font-size: 10pt;
-            line-height: 1.2;
         }
         .no-print {
             display: none;
         }
+        .receipt {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 72mm;
+            page-break-after: avoid;
+        }
     }
 
     .receipt {
-        width: 80mm;
+        width: 72mm;
         padding: 10px;
         font-family: monospace;
         font-size: 10pt;
@@ -86,6 +85,8 @@
     .order-info {
         margin-bottom: 10px;
         font-size: 8pt;
+        display: flex;
+        justify-content: space-between;
     }
 
     .items {
@@ -137,7 +138,7 @@
     }
 </style>
 
-<div class="receipt">
+<div class="receipt print:block">
     <div class="header">
         <div class="business-name">Bar da Comissão de Festas</div>
         <div class="business-info">
@@ -147,8 +148,8 @@
     </div>
 
     <div class="order-info">
-        {$_('orders.orderNumber', { values: { number: order.id } })}<br>
-        {formatDate(order.createdAt)}
+        <span>{$_('orders.orderNumber', { values: { number: order.id } })}</span>
+        <span>{formatDate(order.createdAt)}</span>
     </div>
 
     <div class="items">
@@ -178,9 +179,11 @@
 </div>
 
 <!-- Preview button (only shown on screen) -->
-<button
+ <div class="text-center print:hidden">
+    <button
     class="no-print mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
     on:click={printReceipt}
 >
     {$_('common.print')}
-</button> 
+    </button>
+ </div>

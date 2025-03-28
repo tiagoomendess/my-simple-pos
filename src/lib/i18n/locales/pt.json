@@ -26,7 +26,8 @@
         "page": "Página {current} de {total}",
         "close": "Fechar",
         "print": "Imprimir Recibo",
-        "processing": "A Processar..."
+        "processing": "A Processar...",
+        "clear": "Limpar"
     },
     "settings": {
         "title": "Configurações",
@@ -62,7 +63,7 @@
         "decreaseQuantity": "Diminuir quantidade de {name}",
         "clearOrder": "Limpar pedido",
         "proceedToPayment": "Prosseguir para pagamento",
-        "amountPaid": "O Cliente pagou:",
+        "amountPaid": "O Cliente pagou",
         "change": "Troco",
         "enterAmount": "Digite o valor recebido",
         "quickSelect": "Seleção Rápida"

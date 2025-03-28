@@ -7,7 +7,7 @@
 	import { writable } from 'svelte/store';
 	import { setContext } from 'svelte';
 	import Receipt, { type ReceiptData } from '$lib/components/Receipt.svelte';
-	import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
+	import type { SubmitFunction, ActionResult } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 
 	// Order store
@@ -34,11 +34,11 @@
 		formData.append('amountPaid', amountPaid);
 		formData.append('change', change.toString());
 
-		return async ({ result }) => {
+		return async ({ result }: { result: ActionResult }) => {
 			if (result.type === 'success' && result.data) {
 				// Create receipt with the order data
 				currentReceipt = {
-					id: (result.data as { id: number }).id,
+					id: (result.data.data as { id: number }).id,
 					createdAt: new Date(),
 					items: $orderItems.map(item => ({
 						name: item.name,
@@ -57,6 +57,7 @@
 				amountPaid = '';
 			} else if (result.type === 'error') {
 				console.error('Failed to save order:', result.error);
+				alert('Failed to save order');
 				// TODO: Show error message to user
 			}
 			isProcessingPayment = false;
@@ -135,11 +136,6 @@
 		}
 	}
 
-	// Handle form submission
-	function handleSubmit() {
-		// We don't need to do anything here as we'll handle everything in handleSubmitSuccess
-	}
-
 	// Focus input when modal opens
 	$: if (showPaymentModal && amountInput) {
 		amountInput.focus();
@@ -147,14 +143,15 @@
 </script>
 
 {#if !$isLoading}
-<div class="flex h-screen bg-gray-100">
+<div class="flex h-screen bg-gray-100 print:hidden">
 	<!-- Left Sidebar - Cart Section -->
 	<div class="w-1/4 bg-white shadow-lg p-6 overflow-y-auto flex flex-col">
 		<h2 class="text-2xl font-bold mb-2">{$_('common.currentOrder')}</h2>
 		
 		<!-- Total Amount -->
-		<div class="text-xl font-bold text-gray-800 mb-4">
-			{$_('common.total')}: {formatPrice(total)}
+		<div class="bg-gray-50 rounded-lg p-4 mb-4">
+			<p class="text-sm font-medium text-gray-700 mb-1">{$_('common.total')}</p>
+			<p class="text-4xl font-bold text-gray-800">{formatPrice(total)}</p>
 		</div>
 
 		<!-- Order Items -->
@@ -195,7 +192,7 @@
 				on:click={clearOrder}
 				class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors cursor-pointer text-lg font-medium"
 			>
-				{$_('common.cancel')}
+				{$_('common.clear')}
 			</button>
 			<button
 				on:click={handlePayment}
@@ -333,14 +330,26 @@
 	</div>
 {/if}
 
-{#if showReceipt && currentReceipt}
-	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-		<div class="bg-white p-6 rounded-lg shadow-xl">
+{#if showReceipt && currentReceipt && !isProcessingPayment}
+	<div 
+		class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+		on:click={() => showReceipt = false}
+		on:keydown={(e) => e.key === 'Escape' && (showReceipt = false)}
+		role="button"
+		tabindex="0"
+	>
+		<div 
+			class="bg-white p-6 rounded-lg shadow-xl"
+			on:click|stopPropagation
+			on:keydown|stopPropagation
+			role="dialog"
+			tabindex="0"
+		>
 			<div class="flex justify-between items-center mb-4 print:hidden">
 				<h2 class="text-xl font-bold">{$_('common.print')}</h2>
 				<button
 					on:click={() => showReceipt = false}
-					class="text-gray-500 hover:text-gray-700"
+					class="text-gray-500 hover:text-gray-700 print:hidden"
 					aria-label={$_('common.close')}
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

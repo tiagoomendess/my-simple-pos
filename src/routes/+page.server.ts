@@ -6,12 +6,6 @@ import { eq, sql, desc, isNull } from 'drizzle-orm';
 
 const ITEMS_PER_PAGE = 20;
 
-interface OrderItem {
-    id: number;
-    quantity: number;
-    price: number;
-}
-
 export async function load({ url }) {
     const page = parseInt(url.searchParams.get('page') || '1');
     const offset = (page - 1) * ITEMS_PER_PAGE;

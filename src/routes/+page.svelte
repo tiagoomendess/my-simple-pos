@@ -54,7 +54,7 @@
             <p class="text-gray-500">{$_('products.noProducts')}</p>
           </div>
         {:else}
-          <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div class="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4">
             {#each productsByCategory[category.id] as product (product.id)}
               <button 
                 class="group relative aspect-square rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
