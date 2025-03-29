@@ -60,7 +60,7 @@
         width: 72mm;
         padding: 10px;
         font-family: monospace;
-        font-size: 10pt;
+        font-size: 11pt;
         line-height: 1.2;
     }
 
@@ -98,7 +98,7 @@
         display: flex;
         justify-content: space-between;
         margin-bottom: 3px;
-        font-size: 9pt;
+        font-size: 10pt;
     }
 
     .item-name {
@@ -107,7 +107,7 @@
     }
 
     .item-quantity {
-        margin: 0 10px 0 0;
+        margin: 0 7px 0 0;
         font-weight: bold;
     }
 
@@ -155,7 +155,7 @@
     <div class="items">
         {#each order.items as item}
             <div class="item">
-                <span class="item-quantity">{item.quantity}x</span>
+                <span class="item-quantity">{item.quantity}</span>
                 <span class="item-name">{item.name}</span>
                 <span class="item-price">{formatPrice(item.priceAtTime * item.quantity)}</span>
             </div>
